@@ -488,7 +488,9 @@ public class BlockConverter extends JavaPlugin implements Listener {
 		    teamMember.setTeamIslandLocation(islandLocation);
 		    teamMember.setInTeam(true);
 		    MyLocation memberHome = islandData.getHome(name.toLowerCase());
-		    teamMember.setHomeLocation(new Location(getServer().getWorld(world),memberHome.getBlockX(),memberHome.getBlockY(),memberHome.getBlockZ()));
+		    if (memberHome != null) {
+			teamMember.setHomeLocation(new Location(getServer().getWorld(world),memberHome.getBlockX(),memberHome.getBlockY(),memberHome.getBlockZ()));
+		    }
 		    players.put(name.toLowerCase(),teamMember);
 		    playerNames.add(name.toLowerCase());
 		} 
