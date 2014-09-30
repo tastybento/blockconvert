@@ -113,9 +113,12 @@ public class BlockConverter extends JavaPlugin implements Listener {
 	// reset wait - minutes to seconds
 	aSkyBlockConf.set("general.cooldownRestart", (islandWorldConf.getInt("time-limit",0) * 60));
 	// distance
-	aSkyBlockConf.set("island.distance", islandWorldConf.getInt("island-size",100));
+	int distance = islandWorldConf.getInt("island-size",100);
+	aSkyBlockConf.set("island.distance", distance);
 	int spacing = islandWorldConf.getInt("region-spacing",1);
 	aSkyBlockConf.set("island.protectionRange", (islandWorldConf.getInt("island-size",100) - spacing));
+	aSkyBlockConf.set("island.xoffset", Math.round((double)distance/2D));
+	aSkyBlockConf.set("island.zoffset", Math.round((double)distance/2D));
 	// Height
 	int height = islandWorldConf.getInt("island-height",20);
 	aSkyBlockConf.set("general.islandlevel", height);
@@ -132,7 +135,7 @@ public class BlockConverter extends JavaPlugin implements Listener {
 	aSkyBlockConf.set("general.loginremovemobs", islandWorldConf.getBoolean("remove-mob-on-tp",false));
 	// Max team size
 	aSkyBlockConf.set("island.maxteamsize", islandWorldConf.getInt("party-limit",4));
-	aSkyBlockConf.set("island.maxteamsizeVIP", islandWorldConf.getInt("party-limit-vip",6));
+	aSkyBlockConf.set("island.vipteamsize", islandWorldConf.getInt("party-limit-vip",6));
 	// Protection flags
 	aSkyBlockConf.set("island.allowchestaccess", islandWorldConf.getBoolean("flags.chest-access",false));
 	aSkyBlockConf.set("island.allowhurtmobs", islandWorldConf.getBoolean("flags.kill-animals",false));
@@ -144,6 +147,13 @@ public class BlockConverter extends JavaPlugin implements Listener {
 	    e1.printStackTrace();
 	}
 	sender.sendMessage(ChatColor.GREEN + "Completed config.yml transfer");
+	
+	// Check that the world exists
+	if (getServer().getWorld(world) == null) {
+	    sender.sendMessage(ChatColor.RED + "The world ("+world+") in the IslandWorld config does not exist!");
+	    sender.sendMessage(ChatColor.RED + "Stopping conversion.");
+	    return true;
+	}
 
 	// Go to the islands folder and see how many there are
 	if (isleList.isEmpty() && new File(plugins.getPath() + File.separator + "IslandWorld" , "islelistV6.dat").exists())
@@ -158,7 +168,7 @@ public class BlockConverter extends JavaPlugin implements Listener {
 	    }
 	}
 	if (isleList == null) {
-	    sender.sendMessage(ChatColor.RED + "There is no islands data in IslandWorld!");
+	    sender.sendMessage(ChatColor.RED + "No islands data found in IslandWorld!");
 	    return true;
 	}
 	int total = isleList.size();
@@ -172,11 +182,17 @@ public class BlockConverter extends JavaPlugin implements Listener {
 	    // Get island info
 	    // Location
 	    SimpleIslandV6 islandData = player.getValue();
-	    MyLocation loc = islandData.getLocation();
-	    // Bedrock goes 5 below height of islands. 
-	    Location islandLocation = new Location(getServer().getWorld(world),loc.getBlockX(), height - 5,loc.getBlockZ());
-	    
-	    getLogger().info("New Island Location is :"+loc.getBlockX()+ "," + loc.getBlockY()+ "," + loc.getBlockZ());
+	    // Bedrock goes 5 below height of islands.
+	    /*
+	     * Location of island spawn points with default schematic is as follows:
+	     * For distance = 100
+	     * 1st island: 50, 46 - island area is 0 to 100 for x and z, with the island placed roughly in the middle
+	     * 2nd island: 50, 146
+	     */
+	    int xLocation = (islandData.getX() * distance) + (distance/2);
+	    int zLocation = (islandData.getZ() * distance) + (distance/2);
+	    Location islandLocation = new Location(getServer().getWorld(world),xLocation, height - 5,zLocation);
+	    getLogger().info("New Island Location is :"+((islandData.getX() * distance)+ (distance/2))+ "," + ((islandData.getZ() * distance)+ (distance/2)));
 	    // Place bedrock
 	    Block keyBlock = islandLocation.getBlock();
 	    Material blockType = keyBlock.getType();
@@ -456,7 +472,7 @@ public class BlockConverter extends JavaPlugin implements Listener {
 	    case WORKBENCH:
 
 	    case YELLOW_FLOWER:
-		getLogger().info("Broke " + blockType.toString() + " to make room for bedrock");
+		sender.sendMessage(ChatColor.RED + "Broke " + blockType.toString() + " to make room for bedrock");
 		keyBlock.breakNaturally();
 		keyBlock.setType(Material.BEDROCK);
 		break;
@@ -471,6 +487,11 @@ public class BlockConverter extends JavaPlugin implements Listener {
 	    Players leader = new Players(this,leaderName);
 	    leader.setHasIsland(true);
 	    leader.setIslandLocation(islandLocation);
+	    MyLocation leaderHome = islandData.getLocation();
+	    if (leaderHome != null) {
+		//getLogger().info("Leader's home is " + leaderHome.toString());
+		leader.setHomeLocation(new Location(getServer().getWorld(world),leaderHome.getBlockX(),leaderHome.getBlockY(),leaderHome.getBlockZ()));
+	    }
 	    playerNames.add(leaderName.toLowerCase());
 	    players.put(leaderName.toLowerCase(),leader);
 	    // Step through the names on this island
@@ -490,7 +511,7 @@ public class BlockConverter extends JavaPlugin implements Listener {
 		    MyLocation memberHome = islandData.getHome(name.toLowerCase());
 		    if (memberHome != null) {
 			teamMember.setHomeLocation(new Location(getServer().getWorld(world),memberHome.getBlockX(),memberHome.getBlockY(),memberHome.getBlockZ()));
-		    }
+		    } 
 		    players.put(name.toLowerCase(),teamMember);
 		    playerNames.add(name.toLowerCase());
 		} 
@@ -501,6 +522,7 @@ public class BlockConverter extends JavaPlugin implements Listener {
 	for (Entry<String,Players> name : players.entrySet()) {
 	    sender.sendMessage(ChatColor.GREEN + name.getKey().toLowerCase());
 	}
+	sender.sendMessage(ChatColor.GREEN + "Requesting " + playerNames.size() + " UUID's");
 	final UUIDFetcher fetcher = new UUIDFetcher(playerNames);
 	UUIDflag = false;
 	// Kick off an async task and grab the UUIDs.
@@ -530,12 +552,13 @@ public class BlockConverter extends JavaPlugin implements Listener {
 		} else {
 		    getLogger().info("Waiting...");
 		}
-	    }}, 20L, 20L);
+	    }}, 40L, 40L);
 	return true;
     }
     protected void finish() {
 	check.cancel();
 	// finishes the conversion
+	
 	getLogger().info("Received " + response.size() + " UUID's");
 	// Create lower case versions of the response names 
 	lowerCaseNames = new HashMap<String,UUID>();
@@ -544,7 +567,7 @@ public class BlockConverter extends JavaPlugin implements Listener {
 	}	
 	// Now complete the player objects
 	for (Entry<String,UUID> name : lowerCaseNames.entrySet()) {
-	    getLogger().info("Set UUID for " + name.getKey());
+	    //getLogger().info("Set UUID for " + name.getKey());
 	    if (players.containsKey(name.getKey().toLowerCase())) {
 		players.get(name.getKey().toLowerCase()).setUUID(name.getValue());
 	    } else {
@@ -556,12 +579,20 @@ public class BlockConverter extends JavaPlugin implements Listener {
 	    playerDir.mkdir();
 	}
 	// Now save all the players
+	List<String> noUUIDs = new ArrayList<String>();
 	for (String name : players.keySet()) {
 	    if (players.get(name.toLowerCase()).getUUID() != null) {
 		players.get(name.toLowerCase()).save(playerDir);
 	    } else {
 		getLogger().warning(name + " has no UUID. Cannot save this player!");
+		noUUIDs.add(name);
 	    }  
+	}
+	if (!noUUIDs.isEmpty()) {
+	    getLogger().warning("The following player names have no UUID (according to Mojang) so had to be skipped:");
+	    for (String n : noUUIDs) {
+		getLogger().warning(n);
+	    }
 	}
 	getLogger().info("***** All Done! *****");
 	getLogger().info("Stop server and check that config.yml in askyblock folder is okay");

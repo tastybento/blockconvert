@@ -41,7 +41,7 @@ public class Players {
      */
     public Players(final BlockConverter BlockConverter, String playerName) {
 	this.plugin = BlockConverter;
-	plugin.getLogger().info("Created player object for " + playerName);
+	//plugin.getLogger().info("Created player object for " + playerName);
 	this.uuid = null;
 	this.members = new ArrayList<UUID>();
 	this.memberNames = new ArrayList<String>();
@@ -91,9 +91,9 @@ public class Players {
 	if (!memberNames.isEmpty()) {
 	    plugin.getLogger().info("Player has a team...");
 	    for (String name : memberNames) {
-		plugin.getLogger().info("Updating " + name);
+		plugin.getLogger().info("   Updating " + name);
 		if (plugin.lowerCaseNames.containsKey(name)) {
-		    plugin.getLogger().info("UUID found");
+		    //plugin.getLogger().info("UUID found");
 		    temp.add(plugin.lowerCaseNames.get(name).toString());
 		}
 	    }
