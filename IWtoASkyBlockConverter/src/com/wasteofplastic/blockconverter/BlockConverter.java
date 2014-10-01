@@ -111,7 +111,7 @@ public class BlockConverter extends JavaPlugin implements Listener {
 	String world = islandWorldConf.getString("world-isle","IslandWorld");
 	aSkyBlockConf.set("general.worldName", world );
 	// reset wait - minutes to seconds
-	aSkyBlockConf.set("general.cooldownRestart", (islandWorldConf.getInt("time-limit",0) * 60));
+	aSkyBlockConf.set("general.resetwait", (islandWorldConf.getInt("time-limit",0) * 60));
 	// distance
 	int distance = islandWorldConf.getInt("island-size",100);
 	aSkyBlockConf.set("island.distance", distance);
