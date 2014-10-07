@@ -11,8 +11,6 @@ import java.util.UUID;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -154,6 +152,11 @@ public class BlockConverter extends JavaPlugin implements Listener {
 	    sender.sendMessage(ChatColor.RED + "Stopping conversion.");
 	    return true;
 	}
+	// Make an islands folder in aSkyblock
+	File asbIslandDir = new File(plugins.getPath() + File.separator + "aSkyBlock" + File.separator + "islands");
+	if (!asbIslandDir.exists()) {
+	    asbIslandDir.mkdir();
+	}
 
 	// Go to the islands folder and see how many there are
 	if (isleList.isEmpty() && new File(plugins.getPath() + File.separator + "IslandWorld" , "islelistV6.dat").exists())
@@ -193,8 +196,19 @@ public class BlockConverter extends JavaPlugin implements Listener {
 	    int zLocation = (islandData.getZ() * distance) + (distance/2);
 	    Location islandLocation = new Location(getServer().getWorld(world),xLocation, height - 5,zLocation);
 	    getLogger().info("New Island Location is :"+((islandData.getX() * distance)+ (distance/2))+ "," + ((islandData.getZ() * distance)+ (distance/2)));
+	    // Save the name to the aSkyblock folder
+	    String islandName = xLocation + "," + zLocation;
+	    File newIsland = new File(plugins.getPath() + File.separator + "aSkyBlock" + File.separator + "islands" + File.separator + islandName + ".yml");  
+	    // Save file
+	    try {
+		newIsland.createNewFile();
+	    } catch (IOException e) {
+		getLogger().severe("Could not save the island location file in aSkyblock/islands!");
+		e.printStackTrace();
+	    }
 
 	    // Place bedrock
+	    /*
 	    Block keyBlock = islandLocation.getBlock();
 	    Material blockType = keyBlock.getType();
 	    // Just break everything.
@@ -202,7 +216,8 @@ public class BlockConverter extends JavaPlugin implements Listener {
 		sender.sendMessage(ChatColor.RED + "Broke " + blockType.toString() + " to make room for bedrock");
 		keyBlock.breakNaturally();
 		keyBlock.setType(Material.BEDROCK);
-	    }
+	    }*/
+
 	    // Get the island leader
 	    String leaderName = player.getKey();
 	    getLogger().info("Leader/owner is :"+leaderName.toLowerCase());
