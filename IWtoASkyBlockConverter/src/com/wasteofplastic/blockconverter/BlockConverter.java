@@ -193,6 +193,7 @@ public class BlockConverter extends JavaPlugin implements Listener {
 	    int zLocation = (islandData.getZ() * distance) + (distance/2);
 	    Location islandLocation = new Location(getServer().getWorld(world),xLocation, height - 5,zLocation);
 	    getLogger().info("New Island Location is :"+((islandData.getX() * distance)+ (distance/2))+ "," + ((islandData.getZ() * distance)+ (distance/2)));
+
 	    // Place bedrock
 	    Block keyBlock = islandLocation.getBlock();
 	    Material blockType = keyBlock.getType();
@@ -306,12 +307,23 @@ public class BlockConverter extends JavaPlugin implements Listener {
 	    if (players.get(name.toLowerCase()).getUUID() != null) {
 		players.get(name.toLowerCase()).save(playerDir);
 	    } else {
-		getLogger().warning(name + " has no UUID. Cannot save this player!");
-		noUUIDs.add(name);
+		// Try and obtain local UUID if offline mode is true
+		if (!getServer().getOnlineMode()) {
+		    @SuppressWarnings("deprecation")
+		    UUID offlineUUID = getServer().getOfflinePlayer(name).getUniqueId();
+		    if (offlineUUID != null) {
+			getLogger().warning("Set *offline* UUID for " + name);
+			players.get(name).setUUID(offlineUUID);
+			players.get(name).save(playerDir);
+		    }
+		} else {
+		    getLogger().warning(name + " has no UUID. Cannot save this player!");
+		    noUUIDs.add(name);
+		}
 	    }  
 	}
 	if (!noUUIDs.isEmpty()) {
-	    getLogger().warning("The following player names have no UUID (according to Mojang) so had to be skipped:");
+	    getLogger().warning("The following player names have no UUID (according to Mojang or offline server) so had to be skipped:");
 	    for (String n : noUUIDs) {
 		getLogger().warning(n);
 	    }

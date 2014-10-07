@@ -1,6 +1,6 @@
 name: BlockConverter
 main: com.wasteofplastic.blockconverter.BlockConverter
-version: 0.2
+version: 0.3
 description: Converts IslandWorld files to A Skyblock files
 author: Tastybento
 softdepend: [ASkyBlock, IslandWorld]
