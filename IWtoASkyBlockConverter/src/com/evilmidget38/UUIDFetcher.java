@@ -31,7 +31,7 @@ public class UUIDFetcher implements Callable<Map<String, UUID>> {
  
     public Map<String, UUID> call() throws Exception {
         Map<String, UUID> uuidMap = new HashMap<String, UUID>();
-        int requests = (int) Math.ceil(names.size() / PROFILES_PER_REQUEST);
+        int requests = (int) Math.ceil((double)names.size() / PROFILES_PER_REQUEST);
         for (int i = 0; i < requests; i++) {
             HttpURLConnection connection = createConnection();
             String body = JSONArray.toJSONString(names.subList(i * 100, Math.min((i + 1) * 100, names.size())));
