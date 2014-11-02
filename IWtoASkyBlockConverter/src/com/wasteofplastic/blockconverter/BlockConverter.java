@@ -153,7 +153,7 @@ public class BlockConverter extends JavaPlugin implements Listener {
 	    return true;
 	}
 	// Make an islands folder in aSkyblock
-	File asbIslandDir = new File(plugins.getPath() + File.separator + "aSkyBlock" + File.separator + "islands");
+	File asbIslandDir = new File(plugins.getPath() + File.separator + "ASkyBlock" + File.separator + "islands");
 	if (!asbIslandDir.exists()) {
 	    asbIslandDir.mkdir();
 	}
@@ -198,7 +198,7 @@ public class BlockConverter extends JavaPlugin implements Listener {
 	    getLogger().info("New Island Location is :"+((islandData.getX() * distance)+ (distance/2))+ "," + ((islandData.getZ() * distance)+ (distance/2)));
 	    // Save the name to the aSkyblock folder
 	    String islandName = xLocation + "," + zLocation;
-	    File newIsland = new File(plugins.getPath() + File.separator + "aSkyBlock" + File.separator + "islands" + File.separator + islandName + ".yml");  
+	    File newIsland = new File(plugins.getPath() + File.separator + "ASkyBlock" + File.separator + "islands" + File.separator + islandName + ".yml");  
 	    // Save file
 	    try {
 		newIsland.createNewFile();
@@ -312,7 +312,7 @@ public class BlockConverter extends JavaPlugin implements Listener {
 		getLogger().severe("Oddly, " + name.getKey().toLowerCase() + " is not in the list of players. Skipping...");
 	    }
 	}
-	File playerDir = new File(plugins.getPath() + File.separator + "aSkyBlock" + File.separator + "players");
+	File playerDir = new File(plugins.getPath() + File.separator + "ASkyBlock" + File.separator + "players");
 	if (!playerDir.exists()) {
 	    playerDir.mkdir();
 	}
